@@ -88,8 +88,41 @@ class vsNet(nn.Module):
 
 
 
-
-
+class avNet(nn.modules):
+    
+    def __init__(self, net1, net2):
+        
+        super(avNet, self).__init__()
+        self.fusionLayer = torch.cat((net1, net2), 0)
+        self.fuRelu = nn.ReLU()
+        ## what is the size of input? ##
+        self.biLSTMLayer = nn.LSTM(input_size, hidden_size = 400, num_layers = 1, bidirectional=True)
+        self.biLSTMRelu = nn.ReLU()
+        self.fcLayer1 = nn.Conv2d(in_channels = 400, out_channels = 600)
+        self.fcRelu1 = nn.ReLU()
+        self.fcLayer2 = nn.Conv2d(in_channels = 600, out_channels = 600)
+        self.fcRelu2 = nn.ReLU()
+        self.fcLayer3 = nn.Conv2d(in_channels = 600, out_channels = 600)
+        self.fcRelu3 = nn.ReLU()
+        
+        
+    def forward(self,x):
+        fsLayer = self.fusionLayer(x)
+        fsRule = self.fuRelu(fsLayer)
+        biLayer = self.biLSTMLayer(fsRule)
+        biRule = self.biLSTMRelu(biLayer)
+        layer1 = self.fcLayer1(biRule)
+        layer1 = self.fcRelu1(layer1)
+        layer2 = self.fcLayer2(layer1)
+        layer2 = self.fcRelu2(layer2)
+        layer3 = self.fcLayer3(layer2)
+        layer3 = self.fcRelu3(layer3)
+        
+        out3 = layer3
+        
+        
+        return out3
+    
 
 
 
