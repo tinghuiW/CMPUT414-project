@@ -15,7 +15,7 @@ class asNet(nn.Module):
     def __init__(self):
         
         super(asNet, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels = 1, out_channels = 96, kernel_size = (1,7), dilation = (1,1))
+        self.conv1 = nn.Conv2d(in_channels = 2, out_channels = 96, kernel_size = (1,7), dilation = (1,1))
         self.relu1 = nn.ReLu()
         self.conv2 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (7,1), dilation = (1,1))
         self.relu2 = nn.ReLU()
@@ -49,12 +49,13 @@ class asNet(nn.Module):
         return out1
 
 
+# This net is video-stream #
 class vsNet(nn.Module):
     
     def __init__(self):
         
         super(vsNet, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels = 1, out_channels = 256, kernel_size = (7,1), dilation = (1,1))
+        self.conv1 = nn.Conv2d(in_channels = 1024, out_channels = 256, kernel_size = (7,1), dilation = (1,1))
         self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (1,1))
         self.relu2 = nn.ReLU()
@@ -66,6 +67,8 @@ class vsNet(nn.Module):
         self.relu5 = nn.ReLU()
         self.conv6 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (16,1))
         self.relu6 = nn.ReLU()
+        #self.fl = torch.flatten()
+        #self.relu7 = nn.ReLU()
         
     
     def forward(self,x):
@@ -81,7 +84,10 @@ class vsNet(nn.Module):
         layer5 = self.relu5(layer5)
         layer6 = self.conv6(layer5)
         layer6 = self.relu6(layer6)
+        #flattenLayer = self.fl(layer6)
+        #flattenLayer = self.relu7(flattenLayer)
         
+        #out2 = flattenLayer
         out2 = layer6
         
         return out2 
