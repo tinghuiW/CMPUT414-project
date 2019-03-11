@@ -7,6 +7,7 @@ Created on Sun Mar  3 19:11:50 2019
 
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
 
 # This net is for audio-stream #
 
@@ -15,19 +16,39 @@ class asNet(nn.Module):
     def __init__(self):
         
         super(asNet, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels = 2, out_channels = 96, kernel_size = (1,7), dilation = (1,1))
-        self.relu1 = nn.ReLu()
-        self.conv2 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (7,1), dilation = (1,1))
+        self.conv1 = nn.Conv2d(in_channels = 2, out_channels = 96, kernel_size = (1,7), dilation = (1,1), padding = (0,3))
+        self.relu1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (7,1), dilation = (1,1), padding = (3,0))
         self.relu2 = nn.ReLU()
-        self.conv3 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (1,1))
-        self.relu3 = nn.ReLu()
-        self.conv4 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (2,1))
-        self.relu4 = nn.ReLu()
-        self.conv5 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (4,1))
-        self.relu5 = nn.ReLu()
-        self.conv6 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (8,1))
-        self.relu6 = nn.ReLu()
-        # it is not finished #
+        self.conv3 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (1,1), padding = (2,2))
+        self.relu3 = nn.ReLU()
+        self.conv4 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (2,1), padding = (4,2))
+        self.relu4 = nn.ReLU()
+        self.conv5 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (4,1), padding = (8,2))
+        self.relu5 = nn.ReLU()
+        self.conv6 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (8,1), padding = (16,2))
+        self.relu6 = nn.ReLU()
+        self.conv7 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (16,1), padding = (32,2))
+        self.relu7 = nn.ReLU()
+        self.conv8 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = (32,1), padding = (64,2))
+        self.relu8 = nn.ReLU()
+        self.conv9 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 1, padding = 2)
+        self.relu9 = nn.ReLU()
+        self.conv10 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 2, padding = 4)
+        self.relu10 = nn.ReLU()
+        self.conv11 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 4, padding = 8)
+        self.relu11 = nn.ReLU()
+        self.conv12 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 8, padding = 16)
+        self.relu12 = nn.ReLU()
+        self.conv13 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 16, padding = 32)
+        self.relu13 = nn.ReLU()
+        self.conv14 = nn.Conv2d(in_channels = 96, out_channels = 96, kernel_size = (5,5), dilation = 32, padding = 64)
+        self.relu14 = nn.ReLU()
+        self.conv15 = nn.Conv2d(in_channels = 96, out_channels = 8, kernel_size = (5,5), dilation = 1, padding = 2)
+        self.relu15 = nn.ReLU()
+        #self.fl = torch.flatten()
+        self.relu16 = nn.ReLU()
+       
         
     def forward(self, x):
         layer1 = self.conv1(x)
@@ -42,9 +63,29 @@ class asNet(nn.Module):
         layer5 = self.relu5(layer5)
         layer6 = self.conv6(layer5)
         layer6 = self.relu6(layer6)
-        # it is not finshed #
+        layer7 = self.conv7(layer6)
+        layer7 = self.relu7(layer7)
+        layer8 = self.conv8(layer7)
+        layer8 = self.relu8(layer8)
+        layer9 = self.conv9(layer8)
+        layer9 = self.relu9(layer9)
+        layer10 = self.conv10(layer9)
+        layer10 = self.relu10(layer10)
+        layer11 = self.conv11(layer10)
+        layer11 = self.relu11(layer11)
+        layer12 = self.conv12(layer11)
+        layer12 = self.relu12(layer12)
+        layer13 = self.conv13(layer12)
+        layer13 = self.relu13(layer13)
+        layer14 = self.conv14(layer13)
+        layer14 = self.relu14(layer14)
+        layer15 = self.conv15(layer14)
+        layer15 = self.relu15(layer15)
+        flattenLayer = torch.flatten(layer15)
+        flattenLayer = self.relu7(flattenLayer)
         
-        out1 = layer6
+        
+        out1 = flattenLayer
         
         return out1
 
@@ -55,20 +96,19 @@ class vsNet(nn.Module):
     def __init__(self):
         
         super(vsNet, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels = 1024, out_channels = 256, kernel_size = (7,1), dilation = (1,1))
+        self.conv1 = nn.Conv2d(in_channels = 1024, out_channels = 256, kernel_size = (7,1), dilation = (1,1), padding = (3,0))
         self.relu1 = nn.ReLU()
-        self.conv2 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (1,1))
+        self.conv2 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (1,1), padding = (2, 0))
         self.relu2 = nn.ReLU()
-        self.conv3 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (2,1))
+        self.conv3 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (2,1), padding = (4,0))
         self.relu3 = nn.ReLU()
-        self.conv4 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (4,1))
+        self.conv4 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (4,1), padding = (8,0))
         self.relu4 = nn.ReLU()
-        self.conv5 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (8,1))
+        self.conv5 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (8,1), padding = (16,0))
         self.relu5 = nn.ReLU()
-        self.conv6 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (16,1))
+        self.conv6 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (16,1), padding = (32,0))
         self.relu6 = nn.ReLU()
-#        self.fl = torch.flatten()
-#        self.relu7 = nn.ReLU()
+
         
     
     def forward(self,x):
@@ -84,8 +124,7 @@ class vsNet(nn.Module):
         layer5 = self.relu5(layer5)
         layer6 = self.conv6(layer5)
         layer6 = self.relu6(layer6)
-#        flattenLayer = self.fl(layer6)
-#        flattenLayer = self.relu7(flattenLayer)
+
         
         out2 = layer6
         
@@ -134,21 +173,11 @@ class avNet(nn.modules):
     
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# test #
+#net = vsNet()
+#input = Variable(torch.zeros(256, 1024, 75, 1))
+#out = net(input)
+#print(out)
 
 
 
