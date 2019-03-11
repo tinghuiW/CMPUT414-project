@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+c# -*- coding: utf-8 -*-
 """
 Created on Sun Mar  3 19:11:50 2019
 
@@ -67,8 +67,8 @@ class vsNet(nn.Module):
         self.relu5 = nn.ReLU()
         self.conv6 = nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = (5,1), dilation = (16,1))
         self.relu6 = nn.ReLU()
-        #self.fl = torch.flatten()
-        #self.relu7 = nn.ReLU()
+#        self.fl = torch.flatten()
+#        self.relu7 = nn.ReLU()
         
     
     def forward(self,x):
@@ -84,16 +84,15 @@ class vsNet(nn.Module):
         layer5 = self.relu5(layer5)
         layer6 = self.conv6(layer5)
         layer6 = self.relu6(layer6)
-        #flattenLayer = self.fl(layer6)
-        #flattenLayer = self.relu7(flattenLayer)
+#        flattenLayer = self.fl(layer6)
+#        flattenLayer = self.relu7(flattenLayer)
         
-        #out2 = flattenLayer
         out2 = layer6
         
         return out2 
 
 
-
+# fusion net #
 class avNet(nn.modules):
     
     def __init__(self, net1, net2):
@@ -101,18 +100,17 @@ class avNet(nn.modules):
         super(avNet, self).__init__()
         self.fusionLayer = torch.cat((net1, net2), 0)
         self.fuRelu = nn.ReLU()
-        ## what is the size of input? ##
-        self.biLSTMLayer = nn.LSTM(input_size, hidden_size = 400, num_layers = 1, bidirectional=True)
+        self.biLSTMLayer = nn.LSTM(2568, hidden_size = 400, num_layers = 1, bidirectional=True)
         self.biLSTMRelu = nn.ReLU()
-        self.fcLayer1 = nn.Conv2d(in_channels = 400, out_channels = 600)
+        self.fcLayer1 = nn.Linear(400, 600)
         self.fcRelu1 = nn.ReLU()
-        self.fcLayer2 = nn.Conv2d(in_channels = 600, out_channels = 600)
+        self.fcLayer2 = nn.Linear(600, 600)
         self.fcRelu2 = nn.ReLU()
-        self.fcLayer3 = nn.Conv2d(in_channels = 600, out_channels = 600)
-        self.fcRelu3 = nn.ReLU()
+        self.fcLayer3 = nn.Linear(600, 600)
+        self.fcSig = torch.sigmoid()
         
         
-    def forward(self,x):
+    def forward(self, x, ori):
         fsLayer = self.fusionLayer(x)
         fsRule = self.fuRelu(fsLayer)
         biLayer = self.biLSTMLayer(fsRule)
@@ -122,12 +120,17 @@ class avNet(nn.modules):
         layer2 = self.fcLayer2(layer1)
         layer2 = self.fcRelu2(layer2)
         layer3 = self.fcLayer3(layer2)
-        layer3 = self.fcRelu3(layer3)
+        layer3 = self.fcSig(layer3)
         
+        # complex mask #
         out3 = layer3
+        out3 = torch.reshape(out3, shape = (-1, 298, 257*2))
         
+        sound1 = out3[:, :, :257] * ori[:, 0, :, :]
+        sound2 = out3[:, :, 257:] * ori[:, 0, :, :]
+        sound = torch.cat((sound1, sound2), 1)
         
-        return out3
+        return sound
     
 
 
