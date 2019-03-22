@@ -18,6 +18,7 @@ class asNet(nn.Module):
     def __init__(self):
 
         super(asNet, self).__init__()
+        # using Sequential to simplfy the forword part #
         self.net = nn.Sequential(
             nn.Conv2d(in_channels=2, out_channels=96, kernel_size=(1, 7), dilation=(1, 1), padding=(0, 3)),
             nn.BatchNorm2d(96),
@@ -69,8 +70,8 @@ class asNet(nn.Module):
 
     def forward(self, x):
         out = self.net(x)    # [batch, 8, 297, 257]
-        out = torch.transpose(out, 1, 2)    # [batch , 297, 8, 257]
-        out = torch.reshape(out, [-1, 297, 8 * 257])    # [bath, 297, 8*257]
+        out = torch.transpose(out, 1, 2)    # [batch , 297, 8, 257] Adjust size
+        out = torch.reshape(out, [-1, 297, 8 * 257])    # [bath, 297, 8*257] making out size correct
 
         return out
 
@@ -100,14 +101,14 @@ class vsNet(nn.Module):
             nn.Conv2d(256, 256, kernel_size=(5, 1), stride=1, padding=(32, 0), bias=False, dilation=(16, 1)),
             nn.BatchNorm2d(256),
             nn.ReLU(True),
-            nn.UpsamplingNearest2d((297, 1)),
+            nn.UpsamplingNearest2d((297, 1)), # upsampling the layer, let it be the correct output size
         )
 
 
     def forward(self, x):
         out = self.net(x)    # [batch, 256, 297, 1]
         out = torch.transpose(out, 1, 2)    # [batch, 297, 256, 1]
-        out = torch.reshape(out, [-1, 297, 256])    # [batch, 297, 256]
+        out = torch.reshape(out, [-1, 297, 256])    # [batch, 297, 256] making output size same as the paper gives
 
         return out
 
@@ -132,17 +133,17 @@ class avNet(nn.Module):
         self.fcMask= nn.Linear(600, 257*2*2)
 
     def forward(self, video_1, video_2, audio):
-        video_1_feature = self.vsnet(video_1)
-        video_2_feature = self.vsnet(video_2)
-        audio_feature = self.asnet(audio)
+        video_1_feature = self.vsnet(video_1) # first video net
+        video_2_feature = self.vsnet(video_2) # second video net
+        audio_feature = self.asnet(audio) # audio net
 
-        fuse_feature = torch.cat([video_1_feature, video_2_feature, audio_feature], dim=2)
+        fuse_feature = torch.cat([video_1_feature, video_2_feature, audio_feature], dim=2) # connect three net.
 
         out, _ = self.biLSTMLayer(fuse_feature) #[batch, 297, 800]
         out = self.fcLayer1(out)
         out = self.fcRelu1(out)
         out = torch.sigmoid(self.fcMask(out))
-        out = torch.reshape(out, [-1, 297, 257,2]) # [batch , 297, 247 ,2]
+        out = torch.reshape(out, [-1, 297, 257,2]) # [batch , 297, 247 ,2] # adjust the output size
 
 
         return out
@@ -151,7 +152,7 @@ class avNet(nn.Module):
 if __name__ == "__main__":
     device = torch.device('cuda')
 
-    # fake input
+    # test input
     test_video_1_input = torch.randn(1, 1024, 75, 1).to(device)
     test_video_2_input = torch.randn(1, 1024, 75, 1).to(device)
     test_audio_input = torch.randn(1, 2, 297, 257).to(device)
